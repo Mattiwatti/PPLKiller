@@ -1,0 +1,53 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include <ntdef.h>
+
+#define VS_VERSION_INFO 1
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
+ FILEFLAGSMASK 0x0000003FL
+#ifdef _DEBUG
+ FILEFLAGS VS_FF_DEBUG
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x00040004L
+ FILETYPE 0x00000003L
+ FILESUBTYPE 0x00000007L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Contoso"
+            VALUE "FileDescription", "Protected Processes Light Killer"
+            VALUE "FileVersion", "1.0.0.0"
+            VALUE "InternalName", "PPLKiller"
+            VALUE "LegalCopyright", "Mattiwatti"
+            VALUE "OriginalFilename", "pplkiller.sys"
+            VALUE "ProductName", "Protected Processes Light Killer"
+            VALUE "ProductVersion", "1.0.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
