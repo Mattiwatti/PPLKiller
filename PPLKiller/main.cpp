@@ -231,7 +231,8 @@ UnprotectProcesses(
 
 			// Skip non-light protected processes (i.e. System).
 			// You could also discriminate by signer, e.g. to leave LSASS or antimalware protection enabled
-			if (PsProtection->Level != 0)
+			if (PsProtection->Level != 0 &&
+				PsProtection->s.Type == PsProtectedTypeProtectedLight)
 			{
 				Log("PID %u (%wZ) at 0x%p is a PPL: { type: %u, audit: %u, signer: %u }.\n",
 					HandleToULong(Entry->UniqueProcessId), &Entry->ImageName, Process,
