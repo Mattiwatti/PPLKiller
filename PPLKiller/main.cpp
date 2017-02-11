@@ -95,50 +95,82 @@ FindPsProtectionOffset(
 		return STATUS_NO_MEMORY;
 	RtlZeroMemory(CandidateOffsets, sizeof(ULONG) * PAGE_SIZE);
 	
-	ULONG NumProtectedProcesses = 0;
-	HANDLE ProcessHandle = nullptr;
-	NTSTATUS Status = STATUS_SUCCESS;
-
-	// Enumerate all processes
-	while (NT_SUCCESS(ZwGetNextProcess(ProcessHandle,
-										PROCESS_QUERY_LIMITED_INFORMATION,
-										OBJ_KERNEL_HANDLE,
-										0,
-										&ProcessHandle)))
+	// Query all running processes
+	NTSTATUS Status;
+	ULONG Size;
+	PSYSTEM_PROCESS_INFORMATION SystemProcessInfo = nullptr;
+	if ((Status = ZwQuerySystemInformation(SystemProcessInformation,
+											SystemProcessInfo,
+											0,
+											&Size)) != STATUS_INFO_LENGTH_MISMATCH)
+		goto finished;
+	SystemProcessInfo = static_cast<PSYSTEM_PROCESS_INFORMATION>(
+		ExAllocatePoolWithTag(NonPagedPoolNx,
+								2 * Size,
+								'LPPK'));
+	if (SystemProcessInfo == nullptr)
 	{
-		// Query the process's protection status
-		PS_PROTECTION ProtectionInfo;
-		Status = ZwQueryInformationProcess(ProcessHandle,
-											ProcessProtectionInformation,
-											&ProtectionInfo,
-											sizeof(ProtectionInfo),
-											nullptr);
+		Status = STATUS_NO_MEMORY;
+		goto finished;
+	}
+	Status = ZwQuerySystemInformation(SystemProcessInformation,
+										SystemProcessInfo,
+										2 * Size,
+										nullptr);
+	if (!NT_SUCCESS(Status))
+		goto finished;
 
-		// If it's protected (light or otherwise), get the EPROCESS
-		if (NT_SUCCESS(Status) && ProtectionInfo.Level > 0)
+	// Enumerate the process list
+	ULONG NumProtectedProcesses = 0;
+	PSYSTEM_PROCESS_INFORMATION Entry = SystemProcessInfo;
+	while (Entry->NextEntryOffset != 0)
+	{
+		OBJECT_ATTRIBUTES Attributes = { sizeof(OBJECT_ATTRIBUTES) };
+		CLIENT_ID ClientId = { Entry->UniqueProcessId };
+		HANDLE ProcessHandle;
+		Status = ZwOpenProcess(&ProcessHandle,
+								PROCESS_QUERY_LIMITED_INFORMATION,
+								&Attributes,
+								&ClientId);
+		if (NT_SUCCESS(Status))
 		{
-			PEPROCESS Process;
-			Status = ObReferenceObjectByHandle(ProcessHandle,
-											PROCESS_QUERY_LIMITED_INFORMATION,
-											*PsProcessType,
-											KernelMode,
-											reinterpret_cast<PVOID*>(&Process),
-											nullptr);
-			if (NT_SUCCESS(Status))
+			// Query the process's protection status
+			PS_PROTECTION ProtectionInfo;
+			Status = ZwQueryInformationProcess(ProcessHandle,
+												ProcessProtectionInformation,
+												&ProtectionInfo,
+												sizeof(ProtectionInfo),
+												nullptr);
+
+			// If it's protected (light or otherwise), get the EPROCESS
+			if (NT_SUCCESS(Status) && ProtectionInfo.Level > 0)
 			{
-				// Find offsets in the EPROCESS that are a match for the PS_PROTECTION we got
-				ULONG_PTR End = ALIGN_UP_BY(Process, PAGE_SIZE) - reinterpret_cast<ULONG_PTR>(Process);
-				for (ULONG_PTR i = 0; i < End; ++i)
+				PEPROCESS Process;
+				Status = ObReferenceObjectByHandle(ProcessHandle,
+												PROCESS_QUERY_LIMITED_INFORMATION,
+												*PsProcessType,
+												KernelMode,
+												reinterpret_cast<PVOID*>(&Process),
+												nullptr);
+				if (NT_SUCCESS(Status))
 				{
-					PPS_PROTECTION Candidate = reinterpret_cast<PPS_PROTECTION>(reinterpret_cast<PUCHAR>(Process) + i);
-					if (Candidate->Level == ProtectionInfo.Level)
-						CandidateOffsets[i]++;
+					// Find offsets in the EPROCESS that are a match for the PS_PROTECTION we got
+					ULONG_PTR End = ALIGN_UP_BY(Process, PAGE_SIZE) - reinterpret_cast<ULONG_PTR>(Process);
+					for (ULONG_PTR i = 0; i < End; ++i)
+					{
+						PPS_PROTECTION Candidate = reinterpret_cast<PPS_PROTECTION>(reinterpret_cast<PUCHAR>(Process) + i);
+						if (Candidate->Level == ProtectionInfo.Level)
+							CandidateOffsets[i]++;
+					}
+					NumProtectedProcesses++;
+					ObfDereferenceObject(Process);
 				}
-				NumProtectedProcesses++;
-				ObfDereferenceObject(Process);
 			}
+			ZwClose(ProcessHandle);
 		}
-		ZwClose(ProcessHandle);
+		
+		Entry = reinterpret_cast<PSYSTEM_PROCESS_INFORMATION>(reinterpret_cast<ULONG_PTR>(Entry) +
+																Entry->NextEntryOffset);
 	}
 
 	// Go over the possible offsets to find the one that is correct for all processes
@@ -178,6 +210,8 @@ FindPsProtectionOffset(
 	*PsProtectionOffset = Offset;
 
 finished:
+	if (SystemProcessInfo != nullptr)
+		ExFreePool(SystemProcessInfo);
 	ExFreePool(CandidateOffsets);
 	return Status;
 }
