@@ -1,0 +1,2 @@
+# This stops Github from listing 75% of the repository as 'Objective C'
+*.h linguist-language=C++
