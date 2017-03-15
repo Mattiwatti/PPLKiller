@@ -48,8 +48,8 @@ Log(
 	va_start(VaList, Format);
 	ULONG N = _vsnprintf_s(Message, sizeof(Message), Format, VaList);
 	Message[N] = '\0';
-	va_end(Format);
 	vDbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, Message, VaList);
+	va_end(VaList);
 }
 
 VOID
@@ -96,9 +96,10 @@ FindPsProtectionOffset(
 	RtlZeroMemory(CandidateOffsets, sizeof(ULONG) * PAGE_SIZE);
 	
 	// Query all running processes
+	ULONG NumProtectedProcesses = 0, BestMatchCount = 0, Offset = 0;
 	NTSTATUS Status;
 	ULONG Size;
-	PSYSTEM_PROCESS_INFORMATION SystemProcessInfo = nullptr;
+	PSYSTEM_PROCESS_INFORMATION SystemProcessInfo = nullptr, Entry;
 	if ((Status = ZwQuerySystemInformation(SystemProcessInformation,
 											SystemProcessInfo,
 											0,
@@ -121,8 +122,7 @@ FindPsProtectionOffset(
 		goto finished;
 
 	// Enumerate the process list
-	ULONG NumProtectedProcesses = 0;
-	PSYSTEM_PROCESS_INFORMATION Entry = SystemProcessInfo;
+	Entry = SystemProcessInfo;
 	while (Entry->NextEntryOffset != 0)
 	{
 		OBJECT_ATTRIBUTES Attributes = { sizeof(OBJECT_ATTRIBUTES) };
@@ -174,8 +174,6 @@ FindPsProtectionOffset(
 	}
 
 	// Go over the possible offsets to find the one that is correct for all processes
-	ULONG Offset = 0;
-	ULONG BestMatchCount = 0;
 	for (ULONG i = 0; i < PAGE_SIZE; ++i)
 	{
 		if (CandidateOffsets[i] > BestMatchCount)
@@ -229,12 +227,12 @@ UnprotectProcesses(
 	// Query all running processes
 	NTSTATUS Status;
 	ULONG Size;
-	PSYSTEM_PROCESS_INFORMATION SystemProcessInfo = nullptr;
+	PSYSTEM_PROCESS_INFORMATION SystemProcessInfo = nullptr, Entry;
 	if ((Status = ZwQuerySystemInformation(SystemProcessInformation,
 											SystemProcessInfo,
 											0,
 											&Size)) != STATUS_INFO_LENGTH_MISMATCH)
-		goto finished;
+		return Status;
 	SystemProcessInfo = static_cast<PSYSTEM_PROCESS_INFORMATION>(
 		ExAllocatePoolWithTag(NonPagedPoolNx,
 							2 * Size,
@@ -249,10 +247,10 @@ UnprotectProcesses(
 										2 * Size,
 										nullptr);
 	if (!NT_SUCCESS(Status))
-		return Status;
+		goto finished;
 
 	// Enumerate the process list
-	PSYSTEM_PROCESS_INFORMATION Entry = SystemProcessInfo;
+	Entry = SystemProcessInfo;
 	while (Entry->NextEntryOffset != 0)
 	{
 		PEPROCESS Process;
