@@ -13,7 +13,7 @@ extern "C"
 	Log(
 		_In_ PCCH Format,
 		_In_ ...
-	);
+		);
 
 	NTSTATUS
 	FindPsProtectionOffset(
@@ -125,12 +125,17 @@ FindPsProtectionOffset(
 	Entry = SystemProcessInfo;
 	while (Entry->NextEntryOffset != 0)
 	{
-		OBJECT_ATTRIBUTES Attributes = { sizeof(OBJECT_ATTRIBUTES) };
-		CLIENT_ID ClientId = { Entry->UniqueProcessId };
+		OBJECT_ATTRIBUTES ObjectAttributes;
+		InitializeObjectAttributes(&ObjectAttributes,
+									nullptr,
+									OBJ_KERNEL_HANDLE,
+									nullptr,
+									nullptr);
+		CLIENT_ID ClientId = { Entry->UniqueProcessId, nullptr };
 		HANDLE ProcessHandle;
 		Status = ZwOpenProcess(&ProcessHandle,
 								PROCESS_QUERY_LIMITED_INFORMATION,
-								&Attributes,
+								&ObjectAttributes,
 								&ClientId);
 		if (NT_SUCCESS(Status))
 		{
@@ -209,8 +214,8 @@ FindPsProtectionOffset(
 
 finished:
 	if (SystemProcessInfo != nullptr)
-		ExFreePool(SystemProcessInfo);
-	ExFreePool(CandidateOffsets);
+		ExFreePoolWithTag(SystemProcessInfo, 'LPPK');
+	ExFreePoolWithTag(CandidateOffsets, 'LPPK');
 	return Status;
 }
 
@@ -285,7 +290,7 @@ UnprotectProcesses(
 
 finished:
 	if (SystemProcessInfo != nullptr)
-		ExFreePool(SystemProcessInfo);
+		ExFreePoolWithTag(SystemProcessInfo, 'LPPK');
 	return Status;
 }
 
