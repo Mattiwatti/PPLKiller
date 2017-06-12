@@ -4,6 +4,7 @@
 extern "C" {
 #endif
 
+// winnt.h
 #define PROCESS_TERMINATE					(0x0001)
 #define PROCESS_CREATE_THREAD				(0x0002)
 #define PROCESS_SET_SESSIONID				(0x0004)
@@ -26,6 +27,184 @@ extern "C" {
 											0xFFF)
 #endif
 
+typedef enum _PROCESS_MITIGATION_POLICY
+{
+	ProcessDEPPolicy,
+	ProcessASLRPolicy,
+	ProcessDynamicCodePolicy,
+	ProcessStrictHandleCheckPolicy,
+	ProcessSystemCallDisablePolicy,
+	ProcessMitigationOptionsMask,
+	ProcessExtensionPointDisablePolicy,
+	ProcessControlFlowGuardPolicy,
+	ProcessSignaturePolicy,
+	ProcessFontDisablePolicy,
+	ProcessImageLoadPolicy,
+	MaxProcessMitigationPolicy
+} PROCESS_MITIGATION_POLICY, *PPROCESS_MITIGATION_POLICY;
+
+typedef struct _PROCESS_MITIGATION_ASLR_POLICY
+{
+	union
+	{
+		ULONG Flags;
+		struct
+		{
+			ULONG EnableBottomUpRandomization : 1;
+			ULONG EnableForceRelocateImages : 1;
+			ULONG EnableHighEntropy : 1;
+			ULONG DisallowStrippedImages : 1;
+			ULONG ReservedFlags : 28;
+		} s;
+	} u;
+} PROCESS_MITIGATION_ASLR_POLICY, *PPROCESS_MITIGATION_ASLR_POLICY;
+
+typedef struct _PROCESS_MITIGATION_DEP_POLICY
+{
+	union
+	{
+		ULONG Flags;
+		struct
+		{
+			ULONG Enable : 1;
+			ULONG DisableAtlThunkEmulation : 1;
+			ULONG ReservedFlags : 30;
+		} s;
+	} u;
+	BOOLEAN Permanent;
+} PROCESS_MITIGATION_DEP_POLICY, *PPROCESS_MITIGATION_DEP_POLICY;
+
+typedef struct _PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY
+{
+	union
+	{
+		ULONG Flags;
+		struct
+		{
+			ULONG RaiseExceptionOnInvalidHandleReference : 1;
+			ULONG HandleExceptionsPermanentlyEnabled : 1;
+			ULONG ReservedFlags : 30;
+		} s;
+	} u;
+} PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY, *PPROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY;
+
+typedef struct _PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY
+{
+	union
+	{
+		ULONG Flags;
+		struct
+		{
+			ULONG DisallowWin32kSystemCalls : 1;
+			ULONG ReservedFlags : 31;
+		} s;
+	} u;
+} PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY, *PPROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY;
+
+typedef struct _PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY
+{
+	union
+	{
+		ULONG Flags;
+		struct
+		{
+			ULONG DisableExtensionPoints : 1;
+			ULONG ReservedFlags : 31;
+		} s;
+	} u;
+} PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY, *PPROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY;
+
+typedef struct _PROCESS_MITIGATION_DYNAMIC_CODE_POLICY
+{
+	union
+	{
+		ULONG Flags;
+		struct
+		{
+			ULONG ProhibitDynamicCode : 1;
+			ULONG AllowThreadOptOut : 1;
+			ULONG AllowRemoteDowngrade : 1;
+			ULONG ReservedFlags : 29;
+		} s;
+	} u;
+} PROCESS_MITIGATION_DYNAMIC_CODE_POLICY, *PPROCESS_MITIGATION_DYNAMIC_CODE_POLICY;
+
+typedef struct _PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY
+{
+	union
+	{
+		ULONG Flags;
+		struct
+		{
+			ULONG EnableControlFlowGuard : 1;
+			ULONG EnableExportSuppression : 1;
+			ULONG StrictMode : 1;
+			ULONG ReservedFlags : 29;
+		} s;
+	} u;
+} PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY, *PPROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY;
+
+typedef struct _PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY
+{
+	union
+	{
+		ULONG Flags;
+		struct
+		{
+			ULONG MicrosoftSignedOnly : 1;
+			ULONG StoreSignedOnly : 1;
+			ULONG MitigationOptIn : 1;
+			ULONG ReservedFlags : 29;
+		} s;
+	} u;
+} PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY, *PPROCESS_MITIGATION_BINARY_SIGNATURE_POLICY;
+
+typedef struct _PROCESS_MITIGATION_FONT_DISABLE_POLICY
+{
+	union
+	{
+		ULONG Flags;
+		struct
+		{
+			ULONG DisableNonSystemFonts : 1;
+			ULONG AuditNonSystemFontLoading : 1;
+			ULONG ReservedFlags : 30;
+		} s;
+	} u;
+} PROCESS_MITIGATION_FONT_DISABLE_POLICY, *PPROCESS_MITIGATION_FONT_DISABLE_POLICY;
+
+typedef struct _PROCESS_MITIGATION_IMAGE_LOAD_POLICY
+{
+	union
+	{
+		ULONG Flags;
+		struct
+		{
+			ULONG NoRemoteImages : 1;
+			ULONG NoLowMandatoryLabelImages : 1;
+			ULONG PreferSystem32Images : 1;
+			ULONG ReservedFlags : 29;
+		} s;
+	} u;
+} PROCESS_MITIGATION_IMAGE_LOAD_POLICY, *PPROCESS_MITIGATION_IMAGE_LOAD_POLICY;
+
+typedef struct _PROCESS_MITIGATION_POLICY_INFORMATION
+{
+	PROCESS_MITIGATION_POLICY Policy;
+	union
+	{
+		PROCESS_MITIGATION_ASLR_POLICY ASLRPolicy;
+		PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY StrictHandleCheckPolicy;
+		PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY SystemCallDisablePolicy;
+		PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY ExtensionPointDisablePolicy;
+		PROCESS_MITIGATION_DYNAMIC_CODE_POLICY DynamicCodePolicy;
+		PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY ControlFlowGuardPolicy;
+		PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY SignaturePolicy;
+		PROCESS_MITIGATION_FONT_DISABLE_POLICY FontDisablePolicy;
+		PROCESS_MITIGATION_IMAGE_LOAD_POLICY ImageLoadPolicy;
+	} u;
+} PROCESS_MITIGATION_POLICY_INFORMATION, *PPROCESS_MITIGATION_POLICY_INFORMATION;
+
 typedef enum _PS_PROTECTED_TYPE : UCHAR
 {
 	PsProtectedTypeNone,
@@ -44,6 +223,7 @@ typedef enum _PS_PROTECTED_SIGNER : UCHAR
 	PsProtectedSignerWindows,
 	PsProtectedSignerWinTcb,
 	PsProtectedSignerWinSystem,
+	PsProtectedSignerApp,
 	PsProtectedSignerMax
 } PS_PROTECTED_SIGNER;
 
@@ -61,20 +241,21 @@ typedef struct _PS_PROTECTION
 	};
 } PS_PROTECTION, *PPS_PROTECTION;
 
+// Source: https://github.com/processhacker2/processhacker2/blob/master/phnt/include/ntpsapi.h
 typedef enum _PROCESSINFOCLASS
 {
-	ProcessBasicInformation, // 0, q: PROCESS_BASIC_INFORMATION, PROCESS_EXTENDED_BASIC_INFORMATION
+	ProcessBasicInformation, // q: PROCESS_BASIC_INFORMATION, PROCESS_EXTENDED_BASIC_INFORMATION
 	ProcessQuotaLimits, // qs: QUOTA_LIMITS, QUOTA_LIMITS_EX
 	ProcessIoCounters, // q: IO_COUNTERS
-	ProcessVmCounters, // q: VM_COUNTERS, VM_COUNTERS_EX
+	ProcessVmCounters, // q: VM_COUNTERS, VM_COUNTERS_EX, VM_COUNTERS_EX2
 	ProcessTimes, // q: KERNEL_USER_TIMES
 	ProcessBasePriority, // s: KPRIORITY
 	ProcessRaisePriority, // s: ULONG
 	ProcessDebugPort, // q: HANDLE
 	ProcessExceptionPort, // s: HANDLE
 	ProcessAccessToken, // s: PROCESS_ACCESS_TOKEN
-	ProcessLdtInformation, // 10
-	ProcessLdtSize,
+	ProcessLdtInformation, // qs: PROCESS_LDT_INFORMATION // 10
+	ProcessLdtSize, // s: PROCESS_LDT_SIZE
 	ProcessDefaultHardErrorMode, // qs: ULONG
 	ProcessIoPortHandlers, // (kernel-mode only)
 	ProcessPooledUsageAndLimits, // q: POOLED_USAGE_AND_LIMITS
@@ -83,7 +264,7 @@ typedef enum _PROCESSINFOCLASS
 	ProcessEnableAlignmentFaultFixup, // s: BOOLEAN
 	ProcessPriorityClass, // qs: PROCESS_PRIORITY_CLASS
 	ProcessWx86Information,
-	ProcessHandleCount, // 20, q: ULONG, PROCESS_HANDLE_INFORMATION
+	ProcessHandleCount, // q: ULONG, PROCESS_HANDLE_INFORMATION // 20
 	ProcessAffinityMask, // s: KAFFINITY
 	ProcessPriorityBoost, // qs: ULONG
 	ProcessDeviceMap, // qs: PROCESS_DEVICEMAP_INFORMATION, PROCESS_DEVICEMAP_INFORMATION_EX
@@ -93,10 +274,10 @@ typedef enum _PROCESSINFOCLASS
 	ProcessImageFileName, // q: UNICODE_STRING
 	ProcessLUIDDeviceMapsEnabled, // q: ULONG
 	ProcessBreakOnTermination, // qs: ULONG
-	ProcessDebugObjectHandle, // 30, q: HANDLE
+	ProcessDebugObjectHandle, // q: HANDLE // 30
 	ProcessDebugFlags, // qs: ULONG
 	ProcessHandleTracing, // q: PROCESS_HANDLE_TRACING_QUERY; s: size 0 disables, otherwise enables
-	ProcessIoPriority, // qs: ULONG
+	ProcessIoPriority, // qs: IO_PRIORITY_HINT
 	ProcessExecuteFlags, // qs: ULONG
 	ProcessResourceManagement,
 	ProcessCookie, // q: ULONG
@@ -113,7 +294,7 @@ typedef enum _PROCESSINFOCLASS
 	ProcessGroupInformation, // q: USHORT[]
 	ProcessTokenVirtualizationEnabled, // s: ULONG
 	ProcessConsoleHostProcess, // q: ULONG_PTR
-	ProcessWindowInformation, // 50, q: PROCESS_WINDOW_INFORMATION
+	ProcessWindowInformation, // q: PROCESS_WINDOW_INFORMATION // 50
 	ProcessHandleInformation, // q: PROCESS_HANDLE_SNAPSHOT_INFORMATION // since WIN8
 	ProcessMitigationPolicy, // s: PROCESS_MITIGATION_POLICY_INFORMATION
 	ProcessDynamicFunctionTableInformation,
@@ -123,11 +304,33 @@ typedef enum _PROCESSINFOCLASS
 	ProcessWorkingSetControl, // s: PROCESS_WORKING_SET_CONTROL
 	ProcessHandleTable, // since WINBLUE
 	ProcessCheckStackExtentsMode,
-	ProcessCommandLineInformation, // 60, q: UNICODE_STRING
+	ProcessCommandLineInformation, // q: UNICODE_STRING // 60
 	ProcessProtectionInformation, // q: PS_PROTECTION
+	ProcessMemoryExhaustion, // PROCESS_MEMORY_EXHAUSTION_INFO // since THRESHOLD
+	ProcessFaultInformation, // PROCESS_FAULT_INFORMATION
+	ProcessTelemetryIdInformation, // PROCESS_TELEMETRY_ID_INFORMATION
+	ProcessCommitReleaseInformation, // PROCESS_COMMIT_RELEASE_INFORMATION
+	ProcessDefaultCpuSetsInformation,
+	ProcessAllowedCpuSetsInformation,
+	ProcessSubsystemProcess,
+	ProcessJobMemoryInformation, // PROCESS_JOB_MEMORY_INFO
+	ProcessInPrivate, // since THRESHOLD2 // 70
+	ProcessRaiseUMExceptionOnInvalidHandleClose,
+	ProcessIumChallengeResponse,
+	ProcessChildProcessInformation, // PROCESS_CHILD_PROCESS_INFORMATION
+	ProcessHighGraphicsPriorityInformation,
+	ProcessSubsystemInformation, // q: SUBSYSTEM_INFORMATION_TYPE // since REDSTONE2
+	ProcessEnergyValues, // PROCESS_ENERGY_VALUES, PROCESS_EXTENDED_ENERGY_VALUES
+	ProcessActivityThrottleState, // PROCESS_ACTIVITY_THROTTLE_STATE
+	ProcessActivityThrottlePolicy, // PROCESS_ACTIVITY_THROTTLE_POLICY
+	ProcessWin32kSyscallFilterInformation,
+	ProcessDisableSystemAllowedCpuSets,
+	ProcessWakeInformation, // PROCESS_WAKE_INFORMATION
+	ProcessEnergyTrackingState, // PROCESS_ENERGY_TRACKING_STATE
 	MaxProcessInfoClass
 } PROCESSINFOCLASS;
 
+// Source: https://github.com/processhacker2/processhacker2/blob/master/phnt/include/ntexapi.h
 typedef enum _SYSTEM_INFORMATION_CLASS
 {
 	SystemBasicInformation, // q: SYSTEM_BASIC_INFORMATION
@@ -142,8 +345,8 @@ typedef enum _SYSTEM_INFORMATION_CLASS
 	SystemFlagsInformation, // q: SYSTEM_FLAGS_INFORMATION
 	SystemCallTimeInformation, // not implemented // SYSTEM_CALL_TIME_INFORMATION // 10
 	SystemModuleInformation, // q: RTL_PROCESS_MODULES
-	SystemLocksInformation, // q: SYSTEM_LOCK_INFORMATION
-	SystemStackTraceInformation,
+	SystemLocksInformation, // q: RTL_PROCESS_LOCKS
+	SystemStackTraceInformation, // q: RTL_PROCESS_BACKTRACES
 	SystemPagedPoolInformation, // not implemented
 	SystemNonPagedPoolInformation, // not implemented
 	SystemHandleInformation, // q: SYSTEM_HANDLE_INFORMATION
@@ -161,7 +364,7 @@ typedef enum _SYSTEM_INFORMATION_CLASS
 	SystemTimeAdjustmentInformation, // q: SYSTEM_QUERY_TIME_ADJUST_INFORMATION; s: SYSTEM_SET_TIME_ADJUST_INFORMATION (requires SeSystemtimePrivilege)
 	SystemSummaryMemoryInformation, // not implemented
 	SystemMirrorMemoryInformation, // s (requires license value "Kernel-MemoryMirroringSupported") (requires SeShutdownPrivilege) // 30
-	SystemPerformanceTraceInformation, // s
+	SystemPerformanceTraceInformation, // q; s: (type depends on EVENT_TRACE_INFORMATION_CLASS)
 	SystemObsolete0, // not implemented
 	SystemExceptionInformation, // q: SYSTEM_EXCEPTION_INFORMATION
 	SystemCrashDumpStateInformation, // s (requires SeDebugPrivilege)
@@ -257,10 +460,10 @@ typedef enum _SYSTEM_INFORMATION_CLASS
 	SystemQueryPerformanceCounterInformation, // q: SYSTEM_QUERY_PERFORMANCE_COUNTER_INFORMATION // since WIN7 SP1
 	SystemSessionBigPoolInformation, // q: SYSTEM_SESSION_POOLTAG_INFORMATION // since WIN8
 	SystemBootGraphicsInformation, // q; s: SYSTEM_BOOT_GRAPHICS_INFORMATION (kernel-mode only)
-	SystemScrubPhysicalMemoryInformation,
+	SystemScrubPhysicalMemoryInformation, // q; s: MEMORY_SCRUB_INFORMATION
 	SystemBadPageInformation,
-	SystemProcessorProfileControlArea,
-	SystemCombinePhysicalMemoryInformation, // 130
+	SystemProcessorProfileControlArea, // q; s: SYSTEM_PROCESSOR_PROFILE_CONTROL_AREA
+	SystemCombinePhysicalMemoryInformation, // s: MEMORY_COMBINE_INFORMATION, MEMORY_COMBINE_INFORMATION_EX, MEMORY_COMBINE_INFORMATION_EX2 // 130
 	SystemEntropyInterruptTimingCallback,
 	SystemConsoleInformation, // q: SYSTEM_CONSOLE_INFORMATION
 	SystemPlatformBinaryInformation, // q: SYSTEM_PLATFORM_BINARY_INFORMATION
@@ -314,6 +517,15 @@ typedef enum _SYSTEM_INFORMATION_CLASS
 	SystemSupportedProcessorArchitectures,
 	SystemMemoryUsageInformation, // q: SYSTEM_MEMORY_USAGE_INFORMATION
 	SystemCodeIntegrityCertificateInformation, // q: SYSTEM_CODEINTEGRITY_CERTIFICATE_INFORMATION
+	SystemPhysicalMemoryInformation, // q: SYSTEM_PHYSICAL_MEMORY_INFORMATION // since REDSTONE2
+	SystemControlFlowTransition,
+	SystemKernelDebuggingAllowed,
+	SystemActivityModerationExeState, // SYSTEM_ACTIVITY_MODERATION_EXE_STATE
+	SystemActivityModerationUserSettings, // SYSTEM_ACTIVITY_MODERATION_USER_SETTINGS
+	SystemCodeIntegrityPoliciesFullInformation,
+	SystemCodeIntegrityUnlockInformation, // SYSTEM_CODEINTEGRITY_UNLOCK_INFORMATION // 190
+	SystemIntegrityQuotaInformation,
+	SystemFlushInformation, // q: SYSTEM_FLUSH_INFORMATION
 	MaxSystemInfoClass
 } SYSTEM_INFORMATION_CLASS;
 
