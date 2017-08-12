@@ -79,29 +79,6 @@ Log(
 	va_end(VaList);
 }
 
-VOID
-DriverUnload(
-	_In_ PDRIVER_OBJECT DriverObject
-	)
-{
-	UNREFERENCED_PARAMETER(DriverObject);
-	PAGED_CODE();
-	Log("Driver unloaded.\n");
-}
-
-NTSTATUS
-DriverCreateClose(
-	_In_ PDEVICE_OBJECT DeviceObject,
-	_Inout_ PIRP Irp
-	)
-{
-	UNREFERENCED_PARAMETER(DeviceObject);
-	Irp->IoStatus.Status = STATUS_SUCCESS;
-	Irp->IoStatus.Information = 0;
-	IoCompleteRequest(Irp, IO_NO_INCREMENT);
-	return STATUS_SUCCESS;
-}
-
 // This can be done faster and in fewer lines of code by ghetto-disassembling
 // PsIsProtectedProcess, but this method should hopefully be more robust
 NTSTATUS
@@ -526,9 +503,9 @@ DriverEntry(
 	_In_ PUNICODE_STRING RegistryPath
 	)
 {
-	UNREFERENCED_PARAMETER(RegistryPath);
-
 	PAGED_CODE();
+
+	UNREFERENCED_PARAMETER(RegistryPath);
 	
 	OSVERSIONINFOEXW VersionInfo = { sizeof(OSVERSIONINFOEXW) };
 	NTSTATUS Status = RtlGetVersion(reinterpret_cast<PRTL_OSVERSIONINFOW>(&VersionInfo));
@@ -592,4 +569,27 @@ DriverEntry(
 	Log("Driver loaded successfully. You can unload it again now since it doesn't do anything.\n");
 
 	return STATUS_SUCCESS;
+}
+
+NTSTATUS
+DriverCreateClose(
+	_In_ PDEVICE_OBJECT DeviceObject,
+	_Inout_ PIRP Irp
+	)
+{
+	UNREFERENCED_PARAMETER(DeviceObject);
+	Irp->IoStatus.Status = STATUS_SUCCESS;
+	Irp->IoStatus.Information = 0;
+	IofCompleteRequest(Irp, IO_NO_INCREMENT);
+	return STATUS_SUCCESS;
+}
+
+VOID
+DriverUnload(
+	_In_ PDRIVER_OBJECT DriverObject
+	)
+{
+	PAGED_CODE();
+	UNREFERENCED_PARAMETER(DriverObject);
+	Log("Driver unloaded.\n");
 }
