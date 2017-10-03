@@ -158,7 +158,7 @@ FindPsProtectionOffset(
 
 	// Enumerate the process list
 	Entry = SystemProcessInfo;
-	while (Entry->NextEntryOffset != 0)
+	while (true)
 	{
 		OBJECT_ATTRIBUTES ObjectAttributes;
 		InitializeObjectAttributes(&ObjectAttributes,
@@ -208,6 +208,9 @@ FindPsProtectionOffset(
 			}
 			ZwClose(ProcessHandle);
 		}
+
+		if (Entry->NextEntryOffset == 0)
+			break;
 		
 		Entry = reinterpret_cast<PSYSTEM_PROCESS_INFORMATION>(reinterpret_cast<ULONG_PTR>(Entry) +
 																Entry->NextEntryOffset);
@@ -318,7 +321,7 @@ FindSignatureLevelOffsets(
 
 	// Enumerate the process list
 	Entry = SystemProcessInfo;
-	while (Entry->NextEntryOffset != 0)
+	while (true)
 	{
 		OBJECT_ATTRIBUTES ObjectAttributes;
 		InitializeObjectAttributes(&ObjectAttributes,
@@ -381,6 +384,9 @@ FindSignatureLevelOffsets(
 			}
 			ZwClose(ProcessHandle);
 		}
+
+		if (Entry->NextEntryOffset == 0)
+			break;
 		
 		Entry = reinterpret_cast<PSYSTEM_PROCESS_INFORMATION>(reinterpret_cast<ULONG_PTR>(Entry) +
 																Entry->NextEntryOffset);
@@ -475,7 +481,7 @@ UnprotectProcesses(
 
 	// Enumerate the process list
 	Entry = SystemProcessInfo;
-	while (Entry->NextEntryOffset != 0)
+	while (true)
 	{
 		PEPROCESS Process;
 		Status = PsLookupProcessByProcessId(Entry->UniqueProcessId,
@@ -536,6 +542,9 @@ UnprotectProcesses(
 
 			ObfDereferenceObject(Process);
 		}
+
+		if (Entry->NextEntryOffset == 0)
+			break;
 
 		Entry = reinterpret_cast<PSYSTEM_PROCESS_INFORMATION>(reinterpret_cast<ULONG_PTR>(Entry) +
 																Entry->NextEntryOffset);
