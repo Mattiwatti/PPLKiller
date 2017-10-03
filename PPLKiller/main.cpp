@@ -368,7 +368,7 @@ FindSignatureLevelOffsets(
 
 						if ((CandidateSignatureLevel == SE_SIGNING_LEVEL_MICROSOFT ||
 							CandidateSignatureLevel == SE_SIGNING_LEVEL_WINDOWS ||
-							(Entry->UniqueProcessId == reinterpret_cast<HANDLE>(4ULL) && CandidateSignatureLevel == SE_SIGNING_LEVEL_WINDOWS_TCB))
+							CandidateSignatureLevel == SE_SIGNING_LEVEL_WINDOWS_TCB)
 							&&
 							(CandidateSectionSignatureLevel == SE_SIGNING_LEVEL_MICROSOFT ||
 							CandidateSectionSignatureLevel == SE_SIGNING_LEVEL_WINDOWS))
@@ -514,10 +514,10 @@ UnprotectProcesses(
 				const UCHAR SignatureLevel = *SignatureLevelByte & 0xF;
 				const UCHAR ImageSignatureType = (*SignatureLevelByte >> 4) & 0x7;
 				const UCHAR SectionSignatureLevel = *SectionSignatureLevelByte & 0xF;
-				
+
 				if ((SignatureLevel == SE_SIGNING_LEVEL_MICROSOFT ||
 					SignatureLevel == SE_SIGNING_LEVEL_WINDOWS ||
-					(Pid == 4 && SignatureLevel == SE_SIGNING_LEVEL_WINDOWS_TCB))
+					SignatureLevel == SE_SIGNING_LEVEL_WINDOWS_TCB)
 					&&
 					(SectionSignatureLevel == SE_SIGNING_LEVEL_MICROSOFT ||
 					SectionSignatureLevel == SE_SIGNING_LEVEL_WINDOWS))
