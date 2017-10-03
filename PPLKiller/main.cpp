@@ -1,4 +1,4 @@
-#include <wdm.h>
+#include <ntddk.h>
 #include "procinfo.h"
 #include <stdio.h>
 #include <stdarg.h>
@@ -9,9 +9,6 @@
 #else
 #define PS_SEARCH_START				0x200
 #endif
-
-// The meaning of these values is currently unknown. They give identical results in PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY
-#define POSSIBLE_SIGNATURE_LEVEL(x)  ((x >= 6) && (x <= 64) && ((x % 6 == 0) || (x % 4 == 0)))
 
 extern "C"
 {
@@ -61,6 +58,40 @@ extern "C"
 #pragma alloc_text(PAGE, DriverUnload)
 #pragma alloc_text(INIT, DriverEntry)
 #endif
+
+constexpr const CHAR* const SeSigningLevelNames[] =
+{
+	"SE_SIGNING_LEVEL_UNCHECKED",		// 0x0
+	"SE_SIGNING_LEVEL_UNSIGNED",
+	"SE_SIGNING_LEVEL_ENTERPRISE",
+	"SE_SIGNING_LEVEL_CUSTOM_1",
+	"SE_SIGNING_LEVEL_AUTHENTICODE",
+	"SE_SIGNING_LEVEL_CUSTOM_2",
+	"SE_SIGNING_LEVEL_STORE",
+	"SE_SIGNING_LEVEL_ANTIMALWARE",
+	"SE_SIGNING_LEVEL_MICROSOFT",
+	"SE_SIGNING_LEVEL_CUSTOM_4",
+	"SE_SIGNING_LEVEL_CUSTOM_5",
+	"SE_SIGNING_LEVEL_DYNAMIC_CODEGEN",
+	"SE_SIGNING_LEVEL_WINDOWS",
+	"SE_SIGNING_LEVEL_CUSTOM_7",
+	"SE_SIGNING_LEVEL_WINDOWS_TCB",
+	"SE_SIGNING_LEVEL_CUSTOM_6",		// 0xf
+};
+
+constexpr const CHAR* const SeSigningTypeNames[] =
+{
+	"SeImageSignatureNone",				// 0x0
+	"SeImageSignatureEmbedded",
+	"SeImageSignatureCache",
+	"SeImageSignatureCatalogCached",
+	"SeImageSignatureCatalogNotCached",
+	"SeImageSignatureCatalogHint",
+	"SeImageSignaturePackageCatalog",	// 0x6
+
+	// Make sure it isn't possible to overrun the array bounds using 3 index bits
+	"<INVALID>"							// 0x7
+};
 
 VOID
 Log(
@@ -312,8 +343,8 @@ FindSignatureLevelOffsets(
 												sizeof(PolicyInfo),
 												nullptr);
 
-			// If it has a signature policy requirement, get the EPROCESS
-			if (NT_SUCCESS(Status) && PolicyInfo.u.SignaturePolicy.u.Flags != 0)
+			// If it has an MS signature policy requirement, get the EPROCESS
+			if (NT_SUCCESS(Status) && PolicyInfo.u.SignaturePolicy.MicrosoftSignedOnly != 0)
 			{
 				PEPROCESS Process;
 				Status = ObReferenceObjectByHandle(ProcessHandle,
@@ -324,16 +355,20 @@ FindSignatureLevelOffsets(
 												nullptr);
 				if (NT_SUCCESS(Status))
 				{
-					// Find plausible offsets in the EPROCESS (30/28, 56/8, 24/24 or 6/6). NB: while the offset found
-					// here will be correct, POSSIBLE_SIGNATURE_LEVEL(x) does not imply x.SignaturePolicy.Flags != 0!
-					ULONG_PTR End = ALIGN_UP_BY(Process, PAGE_SIZE) - reinterpret_cast<ULONG_PTR>(Process) - sizeof(UCHAR);
+					// Find plausible offsets in the EPROCESS
+					const ULONG_PTR End = ALIGN_UP_BY(Process, PAGE_SIZE) - reinterpret_cast<ULONG_PTR>(Process) - sizeof(UCHAR);
 					for (ULONG_PTR i = PS_SEARCH_START; i < End; ++i)
 					{
-						UCHAR CandidateSignatureLevel = *(reinterpret_cast<PUCHAR>(Process) + i);
-						ULONG CandidateSectionSignatureLevel = *(reinterpret_cast<PUCHAR>(Process) + i + sizeof(UCHAR));
+						// Take the low nibble of both bytes, which contains the SE_SIGNING_LEVEL_*
+						const UCHAR CandidateSignatureLevel = *(reinterpret_cast<PUCHAR>(Process) + i) & 0xF;
+						const ULONG CandidateSectionSignatureLevel = *(reinterpret_cast<PUCHAR>(Process) + i + sizeof(UCHAR)) & 0xF;
 
-						if (POSSIBLE_SIGNATURE_LEVEL(CandidateSignatureLevel) &&
-							POSSIBLE_SIGNATURE_LEVEL(CandidateSectionSignatureLevel))
+						if ((CandidateSignatureLevel == SE_SIGNING_LEVEL_MICROSOFT ||
+							CandidateSignatureLevel == SE_SIGNING_LEVEL_WINDOWS ||
+							(Entry->UniqueProcessId == reinterpret_cast<HANDLE>(4ULL) && CandidateSignatureLevel == SE_SIGNING_LEVEL_WINDOWS_TCB))
+							&&
+							(CandidateSectionSignatureLevel == SE_SIGNING_LEVEL_MICROSOFT ||
+							CandidateSectionSignatureLevel == SE_SIGNING_LEVEL_WINDOWS))
 						{
 							CandidateSignatureLevelOffsets[i]++;
 							i += sizeof(UCHAR);
@@ -384,10 +419,10 @@ FindSignatureLevelOffsets(
 	}
 
 	if (NumSignatureRequiredProcesses > 0)
-		Log("Found SignatureLevel offset +0x%02X and SectionSignatureLevel offset +0x%02X.\n",
+		Log("Found SignatureLevel offset +0x%02X and SectionSignatureLevel offset +0x%02X.\n\n",
 			SignatureOffset, SectionSignatureOffset);
 	else
-		Log("Did not find any non-system processes with signature requirements.\n");
+		Log("Did not find any non-system processes with signature requirements.\n\n");
 	*SignatureLevelOffset = SignatureOffset;
 	*SectionSignatureLevelOffset = SectionSignatureOffset;
 
@@ -447,8 +482,8 @@ UnprotectProcesses(
 											&Process);
 		if (NT_SUCCESS(Status))
 		{
-			ULONG Pid = HandleToULong(Entry->UniqueProcessId);
-			PPS_PROTECTION PsProtection = reinterpret_cast<PPS_PROTECTION>(
+			const ULONG Pid = HandleToULong(Entry->UniqueProcessId);
+			const PPS_PROTECTION PsProtection = reinterpret_cast<PPS_PROTECTION>(
 				reinterpret_cast<PUCHAR>(Process) + PsProtectionOffset);
 
 			// Skip non-light protected processes (i.e. System).
@@ -462,26 +497,41 @@ UnprotectProcesses(
 				// Goodnight sweet prince
 				PsProtection->Level = 0;
 				(*NumProcessesUnprotected)++;
-				Log("Protection removed.\n");
+				Log("Protection removed.\n\n");
 			}
 
-			// The meaning of these values is currently unknown. There are other non-zero
-			// possibilities that do not have a matching signature mitigation policy (8/0, 6/6)
-			PUCHAR SignatureLevel = reinterpret_cast<PUCHAR>(Process) + SignatureLevelOffset;
-			PUCHAR SectionSignatureLevel = reinterpret_cast<PUCHAR>(Process) + SectionSignatureLevelOffset;
-			if (Pid != 0 && Pid != 4 &&												// Not a system process?
-				SignatureLevelOffset != 0 && SectionSignatureLevelOffset != 0 &&	// >= Windows 10 RS2, and offsets known?
-				(*SignatureLevel == 24 || *SignatureLevel == 30 || *SignatureLevel == 56) &&
-				(*SectionSignatureLevel == 8 || *SectionSignatureLevel == 24 || *SectionSignatureLevel == 28))
+			if (Pid != 0 && Pid != 4 &&											// Not a system process?
+				SignatureLevelOffset != 0 && SectionSignatureLevelOffset != 0)	// >= Windows 10 RS2, and offsets known?
 			{
-				Log("PID %u (%wZ) at 0x%p has code signing requirements: { image: %u, section: %u }\n", Pid,
-					&Entry->ImageName, Process, *SignatureLevel, *SectionSignatureLevel);
+				const PUCHAR SignatureLevelByte = reinterpret_cast<PUCHAR>(Process) + SignatureLevelOffset;
+				const PUCHAR SectionSignatureLevelByte = reinterpret_cast<PUCHAR>(Process) + SectionSignatureLevelOffset;
+				const UCHAR SignatureLevel = *SignatureLevelByte & 0xF;
+				const UCHAR ImageSignatureType = (*SignatureLevelByte >> 4) & 0x7;
+				const UCHAR SectionSignatureLevel = *SectionSignatureLevelByte & 0xF;
+				
+				if ((SignatureLevel == SE_SIGNING_LEVEL_MICROSOFT ||
+					SignatureLevel == SE_SIGNING_LEVEL_WINDOWS ||
+					(Pid == 4 && SignatureLevel == SE_SIGNING_LEVEL_WINDOWS_TCB))
+					&&
+					(SectionSignatureLevel == SE_SIGNING_LEVEL_MICROSOFT ||
+					SectionSignatureLevel == SE_SIGNING_LEVEL_WINDOWS))
+				{
+					Log("PID %u (%wZ) at 0x%p has a Microsoft code signing requirement:\n", Pid, &Entry->ImageName, Process);
 
-				// Hasta la vista baby
-				*SignatureLevel = 0;
-				*SectionSignatureLevel = 0;
-				(*NumSignatureRequirementsRemoved)++;
-				Log("Requirements removed.\n");
+					// NB: the SE_IMAGE_SIGNATURE_TYPE can be 'none' while still having an MS code signing policy, so this isn't a reliable indicator.
+					// Normally though it will either be SeImageSignatureEmbedded (system process) or SeImageSignatureCatalogCached (other processes).
+					Log("Image signature level:\t0x%02X [%s], type: 0x%02X [%s]\n",
+						SignatureLevel, SeSigningLevelNames[SignatureLevel],
+						ImageSignatureType, SeSigningTypeNames[ImageSignatureType]);
+					Log("Section signature level:\t0x%02X [%s]\n",
+						SectionSignatureLevel, SeSigningLevelNames[SectionSignatureLevel]);
+
+					// Hasta la vista baby
+					*SignatureLevelByte = 0;
+					*SectionSignatureLevelByte = 0;
+					(*NumSignatureRequirementsRemoved)++;
+					Log("Requirements removed.\n\n");
+				}
 			}
 
 			ObfDereferenceObject(Process);
@@ -554,10 +604,10 @@ DriverEntry(
 								&NumSignatureRequirementsRemoved);
 	if (!NT_SUCCESS(Status))
 	{
-		Log("Error %08X\n", Status);
+		Log("\nError %08X\n", Status);
 		return Status;
 	}
-	Log("Success. Removed PPL protection from %u processes.\n", NumUnprotected);
+	Log("\nSuccess. Removed PPL protection from %u processes.\n", NumUnprotected);
 	if (VersionInfo.dwBuildNumber >= 15063)
 		Log("Removed code signing requirements from %u processes.\n", NumSignatureRequirementsRemoved);
 
