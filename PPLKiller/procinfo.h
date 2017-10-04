@@ -1,5 +1,32 @@
 #pragma once
 
+#include <wdm.h>
+
+// Make Intellisense shut up about every single occurrence of PAGED_CODE() and NT_ASSERT() so it can find something useful instead
+#if defined(__INTELLISENSE__) && defined(NT_ASSERT_ACTION)
+	#undef NT_ASSERT_ACTION
+	#undef NT_ASSERTMSG_ASSUME
+	#undef NT_ASSERTMSGW_ASSUME
+	#define NT_ASSERT_ACTION(exp)			(NT_ANALYSIS_ASSUME(exp), 0)
+	#define NT_ASSERTMSG_ASSUME(msg, exp)	(NT_ANALYSIS_ASSUME(exp), 0)
+	#define NT_ASSERTMSGW_ASSUME(msg, exp)	(NT_ANALYSIS_ASSUME(exp), 0)
+#elif defined(__clang__)
+	#ifdef PAGED_CODE
+		// Help out poor Clang, which has a __readcr8() intrinsic declared in its headers, but of the wrong type and not actually implemented.
+		// This breaks anything that touches the IRQL on x64. For us simply getting rid of PAGED_CODE() is enough.
+		#undef PAGED_CODE
+		#define PAGED_CODE()				((void)0)
+	#endif
+	#ifdef ALLOC_PRAGMA
+		// wdm.h assumes every x64 compiler must be MSVC and defines ALLOC_PRAGMA unconditionally
+		#undef ALLOC_PRAGMA
+		#undef ALLOC_DATA_PRAGMA
+	#endif
+	// Finally, stop this idiotic warning from causing the build to fail.
+	// (issued for "MyStruct S = { 0 }", which is perfectly standards compliant and well-defined in both C and C++)
+	#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

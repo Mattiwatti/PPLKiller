@@ -104,8 +104,11 @@ Log(
 	CHAR Message[512];
 	va_list VaList;
 	va_start(VaList, Format);
-	ULONG N = _vsnprintf_s(Message, sizeof(Message), Format, VaList);
+	CONST ULONG N = _vsnprintf_s(Message, sizeof(Message) - sizeof(CHAR), Format, VaList);
 	Message[N] = '\0';
+
+	// Requires DWORD IHVDRIVER in HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Debug Print Filter
+	// to be set to >= 0x8 on the target machine
 	vDbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, Message, VaList);
 	va_end(VaList);
 }
@@ -195,10 +198,10 @@ FindPsProtectionOffset(
 				if (NT_SUCCESS(Status))
 				{
 					// Find offsets in the EPROCESS that are a match for the PS_PROTECTION we got
-					ULONG_PTR End = ALIGN_UP_BY(Process, PAGE_SIZE) - reinterpret_cast<ULONG_PTR>(Process);
+					CONST ULONG_PTR End = ALIGN_UP_BY(Process, PAGE_SIZE) - reinterpret_cast<ULONG_PTR>(Process);
 					for (ULONG_PTR i = PS_SEARCH_START; i < End; ++i)
 					{
-						PPS_PROTECTION Candidate = reinterpret_cast<PPS_PROTECTION>(reinterpret_cast<PUCHAR>(Process) + i);
+						CONST PPS_PROTECTION Candidate = reinterpret_cast<PPS_PROTECTION>(reinterpret_cast<PUCHAR>(Process) + i);
 						if (Candidate->Level == ProtectionInfo.Level)
 							CandidateOffsets[i]++;
 					}
