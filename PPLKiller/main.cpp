@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-// Exclude some false positive matches that have started 'happening' to occur in the KPROCESS/Pcb header
+// Exclude false positive matches in the KPROCESS/Pcb header
 #ifdef _M_AMD64
 #define PS_SEARCH_START				0x600
 #else
