@@ -18,11 +18,6 @@ extern "C"
 	DRIVER_UNLOAD
 	DriverUnload;
 
-	_Dispatch_type_(IRP_MJ_CREATE)
-	_Dispatch_type_(IRP_MJ_CLOSE)
-	DRIVER_DISPATCH
-	DriverCreateClose;
-
 	VOID
 	Log(
 		_In_ PCCH Format,
@@ -643,26 +638,13 @@ DriverEntry(
 		Log("No action was taken.\n");
 	}
 
-	// Set driver callback functions
-	DriverObject->MajorFunction[IRP_MJ_CREATE] = DriverCreateClose;
-	DriverObject->MajorFunction[IRP_MJ_CLOSE] = DriverCreateClose;
+	// Set the driver unload function.
+	// Note: you can freely return an error status at this point instead so you don't have to manually 'sc stop pplkiller'.
+	// The only reason the driver returns success is to prevent inane bug reports about the driver not working when it is
 	DriverObject->DriverUnload = DriverUnload;
 
 	Log("Driver loaded successfully. You can unload it again now since it doesn't do anything.\n");
 
-	return STATUS_SUCCESS;
-}
-
-NTSTATUS
-DriverCreateClose(
-	_In_ PDEVICE_OBJECT DeviceObject,
-	_Inout_ PIRP Irp
-	)
-{
-	UNREFERENCED_PARAMETER(DeviceObject);
-	Irp->IoStatus.Status = STATUS_SUCCESS;
-	Irp->IoStatus.Information = 0;
-	IofCompleteRequest(Irp, IO_NO_INCREMENT);
 	return STATUS_SUCCESS;
 }
 
