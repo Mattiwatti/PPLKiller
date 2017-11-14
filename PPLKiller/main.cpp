@@ -51,7 +51,6 @@ extern "C"
 }
 
 #ifdef ALLOC_PRAGMA
-#pragma alloc_text(PAGE, Log)
 #pragma alloc_text(PAGE, FindPsProtectionOffset)
 #pragma alloc_text(PAGE, FindSignatureLevelOffsets)
 #pragma alloc_text(PAGE, UnprotectProcesses)
@@ -99,17 +98,12 @@ Log(
 	_In_ ...
 	)
 {
-	PAGED_CODE();
-
 	CHAR Message[512];
 	va_list VaList;
 	va_start(VaList, Format);
 	CONST ULONG N = _vsnprintf_s(Message, sizeof(Message) - sizeof(CHAR), Format, VaList);
 	Message[N] = '\0';
-
-	// Requires DWORD IHVDRIVER in HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Debug Print Filter
-	// to be set to >= 0x8 on the target machine
-	vDbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, Message, VaList);
+	vDbgPrintExWithPrefix("[PPLKILLER] ", DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, Message, VaList);
 	va_end(VaList);
 }
 
@@ -624,8 +618,7 @@ DriverEntry(
 		}
 	}
 
-	// Remove protection from all running processes. Currently (as of 10.0.15063.0) there is a 1-to-1
-	// correspondence between PPL and signature required processes, but this function will remove either
+	// Remove process protection and signing requirements from all running non-system processes.
 	ULONG NumUnprotected, NumSignatureRequirementsRemoved;
 	Status = UnprotectProcesses(PsProtectionOffset,
 								SignatureLevelOffset,
@@ -634,12 +627,21 @@ DriverEntry(
 								&NumSignatureRequirementsRemoved);
 	if (!NT_SUCCESS(Status))
 	{
-		Log("\nError %08X\n", Status);
+		Log("UnprotectProcesses: error %08X\n", Status);
 		return Status;
 	}
-	Log("\nSuccess. Removed PPL protection from %u processes.\n", NumUnprotected);
-	if (VersionInfo.dwBuildNumber >= 15063)
-		Log("Removed code signing requirements from %u processes.\n", NumSignatureRequirementsRemoved);
+
+	if (NumUnprotected > 0 || NumSignatureRequirementsRemoved > 0)
+	{
+		Log("Success.\n");
+		Log("Removed PPL protection from %u processes.\n", NumUnprotected);
+		if (VersionInfo.dwBuildNumber >= 15063)
+			Log("Removed code signing requirements from %u processes.\n", NumSignatureRequirementsRemoved);
+	}
+	else
+	{
+		Log("No action was taken.\n");
+	}
 
 	// Set driver callback functions
 	DriverObject->MajorFunction[IRP_MJ_CREATE] = DriverCreateClose;
