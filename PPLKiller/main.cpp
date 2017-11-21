@@ -367,6 +367,7 @@ FindSignatureLevelOffsets(
 
 						if ((CandidateSignatureLevel == SE_SIGNING_LEVEL_MICROSOFT ||
 							CandidateSignatureLevel == SE_SIGNING_LEVEL_WINDOWS ||
+							CandidateSignatureLevel == SE_SIGNING_LEVEL_ANTIMALWARE ||
 							CandidateSignatureLevel == SE_SIGNING_LEVEL_WINDOWS_TCB)
 							&&
 							(CandidateSectionSignatureLevel == SE_SIGNING_LEVEL_MICROSOFT ||
@@ -527,6 +528,7 @@ UnprotectProcesses(
 
 				if ((SignatureLevel == SE_SIGNING_LEVEL_MICROSOFT ||
 					SignatureLevel == SE_SIGNING_LEVEL_WINDOWS ||
+					SignatureLevel == SE_SIGNING_LEVEL_ANTIMALWARE ||
 					SignatureLevel == SE_SIGNING_LEVEL_WINDOWS_TCB)
 					&&
 					(SectionSignatureLevel == SE_SIGNING_LEVEL_MICROSOFT ||
