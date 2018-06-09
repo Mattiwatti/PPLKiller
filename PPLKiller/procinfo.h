@@ -2,8 +2,9 @@
 
 #include <wdm.h>
 
-// Make Intellisense shut up about every single occurrence of PAGED_CODE() and NT_ASSERT() so it can find something useful instead
+// Help the helpers
 #if defined(__INTELLISENSE__) && defined(NT_ASSERT_ACTION)
+	// Make Intellisense shut up about every single occurrence of PAGED_CODE() and NT_ASSERT() so it can find something useful instead
 	#undef NT_ASSERT_ACTION
 	#undef NT_ASSERTMSG_ASSUME
 	#undef NT_ASSERTMSGW_ASSUME
@@ -22,9 +23,22 @@
 		#undef ALLOC_PRAGMA
 		#undef ALLOC_DATA_PRAGMA
 	#endif
+
+	// Don't warn on harmless pragmas, which were added to make MSVC and Prefast shut up in the first place anyway
+	#pragma clang diagnostic ignored "-Wunknown-pragmas"
+
 	// Finally, stop this idiotic warning from causing the build to fail.
 	// (issued for "MyStruct S = { 0 }", which is perfectly standards compliant and well-defined in both C and C++)
 	#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+#endif
+#if defined(__INTELLISENSE__) || defined(__RESHARPER__) || defined(__clang__)
+	// None of these seem to know that compiling for kernel mode implies -D_KERNEL_MODE=1 (a reserved define that you can't pass to cl.exe)
+	#define _KERNEL_MODE 1
+#endif
+#if defined(__RESHARPER__)
+	// Work around the lame fact that Resharper doesn't understand __declspec(dllimport)
+	#undef DECLSPEC_IMPORT
+	#define DECLSPEC_IMPORT extern
 #endif
 
 #ifdef __cplusplus
