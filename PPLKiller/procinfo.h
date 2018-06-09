@@ -44,6 +44,7 @@ extern "C" {
 #define PROCESS_SET_INFORMATION				(0x0200)
 #define PROCESS_QUERY_INFORMATION			(0x0400)
 #define PROCESS_SUSPEND_RESUME				(0x0800)
+#define PROCESS_SET_PORT					PROCESS_SUSPEND_RESUME
 #define PROCESS_QUERY_LIMITED_INFORMATION	(0x1000)
 #define PROCESS_SET_LIMITED_INFORMATION		(0x2000)
 #if (NTDDI_VERSION >= NTDDI_VISTA)
@@ -68,6 +69,9 @@ typedef struct _PROCESS_MITIGATION_POLICY_INFORMATION
 		PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY SignaturePolicy;
 		PROCESS_MITIGATION_FONT_DISABLE_POLICY FontDisablePolicy;
 		PROCESS_MITIGATION_IMAGE_LOAD_POLICY ImageLoadPolicy;
+		PROCESS_MITIGATION_SYSTEM_CALL_FILTER_POLICY SystemCallFilterPolicy;
+		PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY PayloadRestrictionPolicy;
+		PROCESS_MITIGATION_CHILD_PROCESS_POLICY ChildProcessPolicy;
 	} u;
 } PROCESS_MITIGATION_POLICY_INFORMATION, *PPROCESS_MITIGATION_POLICY_INFORMATION;
 
@@ -154,12 +158,12 @@ typedef enum _SYSTEM_INFORMATION_CLASS
 	SystemVerifierRemoveDriverInformation, // s (requires SeDebugPrivilege)
 	SystemProcessorIdleInformation, // q: SYSTEM_PROCESSOR_IDLE_INFORMATION
 	SystemLegacyDriverInformation, // q: SYSTEM_LEGACY_DRIVER_INFORMATION
-	SystemCurrentTimeZoneInformation, // q
+	SystemCurrentTimeZoneInformation, // q; s: RTL_TIME_ZONE_INFORMATION
 	SystemLookasideInformation, // q: SYSTEM_LOOKASIDE_INFORMATION
 	SystemTimeSlipNotification, // s (requires SeSystemtimePrivilege)
 	SystemSessionCreate, // not implemented
 	SystemSessionDetach, // not implemented
-	SystemSessionInformation, // not implemented
+	SystemSessionInformation, // not implemented (SYSTEM_SESSION_INFORMATION)
 	SystemRangeStartInformation, // q: SYSTEM_RANGE_START_INFORMATION // 50
 	SystemVerifierInformation, // q: SYSTEM_VERIFIER_INFORMATION; s (requires SeDebugPrivilege)
 	SystemVerifierThunkExtend, // s (kernel-mode only)
@@ -179,8 +183,8 @@ typedef enum _SYSTEM_INFORMATION_CLASS
 	SystemBigPoolInformation, // q: SYSTEM_BIGPOOL_INFORMATION
 	SystemSessionPoolTagInformation, // q: SYSTEM_SESSION_POOLTAG_INFORMATION
 	SystemSessionMappedViewInformation, // q: SYSTEM_SESSION_MAPPED_VIEW_INFORMATION
-	SystemHotpatchInformation, // q; s
-	SystemObjectSecurityMode, // q // 70
+	SystemHotpatchInformation, // q; s: SYSTEM_HOTPATCH_CODE_INFORMATION
+	SystemObjectSecurityMode, // q: ULONG // 70
 	SystemWatchdogTimerHandler, // s (kernel-mode only)
 	SystemWatchdogTimerInformation, // q (kernel-mode only); s (kernel-mode only)
 	SystemLogicalProcessorInformation, // q: SYSTEM_LOGICAL_PROCESSOR_INFORMATION
@@ -303,6 +307,11 @@ typedef enum _SYSTEM_INFORMATION_CLASS
 	SystemCodeIntegrityUnlockInformation, // SYSTEM_CODEINTEGRITY_UNLOCK_INFORMATION // 190
 	SystemIntegrityQuotaInformation,
 	SystemFlushInformation, // q: SYSTEM_FLUSH_INFORMATION
+	SystemProcessorIdleMaskInformation, // since REDSTONE3
+	SystemSecureDumpEncryptionInformation,
+	SystemWriteConstraintInformation, // SYSTEM_WRITE_CONSTRAINT_INFORMATION
+	SystemKernelVaShadowInformation, // SYSTEM_KERNEL_VA_SHADOW_INFORMATION
+	SystemSpeculationControlInformation = 201, // SYSTEM_SPECULATION_CONTROL_INFORMATION
 	MaxSystemInfoClass
 } SYSTEM_INFORMATION_CLASS;
 
@@ -392,6 +401,20 @@ ZwGetNextProcess(
 	_In_ ULONG HandleAttributes,
 	_In_ ULONG Flags,
 	_Out_ PHANDLE NewProcessHandle
+	);
+#endif
+
+#if NTDDI_VERSION >= NTDDI_WIN10_RS3
+NTSYSCALLAPI
+NTSTATUS
+NTAPI
+ZwGetNextThread(
+	_In_ HANDLE ProcessHandle,
+	_In_ HANDLE ThreadHandle,
+	_In_ ACCESS_MASK DesiredAccess,
+	_In_ ULONG HandleAttributes,
+	_In_ ULONG Flags,
+	_Out_ PHANDLE NewThreadHandle
 	);
 #endif
 
