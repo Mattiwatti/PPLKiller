@@ -12,9 +12,13 @@
 
 extern "C"
 {
+	_Function_class_(DRIVER_INITIALIZE)
+	_IRQL_requires_(PASSIVE_LEVEL)
 	DRIVER_INITIALIZE
 	DriverEntry;
 
+	_Function_class_(DRIVER_UNLOAD)
+	_IRQL_requires_(PASSIVE_LEVEL)
 	DRIVER_UNLOAD
 	DriverUnload;
 
@@ -114,7 +118,7 @@ FindPsProtectionOffset(
 	*PsProtectionOffset = 0;
 
 	// Since the EPROCESS struct is opaque and we don't know its size, allocate for 4K possible offsets
-	PULONG CandidateOffsets = static_cast<PULONG>(
+	const PULONG CandidateOffsets = static_cast<PULONG>(
 		ExAllocatePoolWithTag(NonPagedPoolNx,
 							PAGE_SIZE * sizeof(ULONG),
 							'LPPK'));
@@ -152,12 +156,8 @@ FindPsProtectionOffset(
 	Entry = SystemProcessInfo;
 	while (true)
 	{
-		OBJECT_ATTRIBUTES ObjectAttributes;
-		InitializeObjectAttributes(&ObjectAttributes,
-									nullptr,
-									OBJ_KERNEL_HANDLE,
-									nullptr,
-									nullptr);
+		OBJECT_ATTRIBUTES ObjectAttributes = RTL_CONSTANT_OBJECT_ATTRIBUTES(static_cast<PUNICODE_STRING>(nullptr),
+																			OBJ_KERNEL_HANDLE);
 		CLIENT_ID ClientId = { Entry->UniqueProcessId, nullptr };
 		HANDLE ProcessHandle;
 		Status = ZwOpenProcess(&ProcessHandle,
@@ -273,13 +273,13 @@ FindSignatureLevelOffsets(
 	*SectionSignatureLevelOffset = 0;
 
 	// Since the EPROCESS struct is opaque and we don't know its size, allocate for 4K possible offsets
-	PULONG CandidateSignatureLevelOffsets = static_cast<PULONG>(
+	const PULONG CandidateSignatureLevelOffsets = static_cast<PULONG>(
 		ExAllocatePoolWithTag(NonPagedPoolNx,
 							PAGE_SIZE * sizeof(ULONG),
 							'LPPK'));
 	if (CandidateSignatureLevelOffsets == nullptr)
 		return STATUS_NO_MEMORY;
-	PULONG CandidateSectionSignatureLevelOffsets = static_cast<PULONG>(
+	const PULONG CandidateSectionSignatureLevelOffsets = static_cast<PULONG>(
 		ExAllocatePoolWithTag(NonPagedPoolNx,
 							PAGE_SIZE * sizeof(ULONG),
 							'LPPK'));
@@ -322,12 +322,8 @@ FindSignatureLevelOffsets(
 	Entry = SystemProcessInfo;
 	while (true)
 	{
-		OBJECT_ATTRIBUTES ObjectAttributes;
-		InitializeObjectAttributes(&ObjectAttributes,
-									nullptr,
-									OBJ_KERNEL_HANDLE,
-									nullptr,
-									nullptr);
+		OBJECT_ATTRIBUTES ObjectAttributes = RTL_CONSTANT_OBJECT_ATTRIBUTES(static_cast<PUNICODE_STRING>(nullptr),
+																			OBJ_KERNEL_HANDLE);
 		CLIENT_ID ClientId = { Entry->UniqueProcessId, nullptr };
 		HANDLE ProcessHandle;
 		Status = ZwOpenProcess(&ProcessHandle,
@@ -568,6 +564,7 @@ finished:
 	return Status;
 }
 
+_Use_decl_annotations_
 NTSTATUS
 DriverEntry(
 	_In_ PDRIVER_OBJECT DriverObject,
@@ -650,6 +647,7 @@ DriverEntry(
 	return STATUS_SUCCESS;
 }
 
+_Use_decl_annotations_
 VOID
 DriverUnload(
 	_In_ PDRIVER_OBJECT DriverObject
