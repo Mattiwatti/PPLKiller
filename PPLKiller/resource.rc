@@ -1,6 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include <ntdef.h>
+#include <winres.h>
 
 #define VS_VERSION_INFO 1
 
