@@ -185,6 +185,7 @@
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <ConformanceMode>true</ConformanceMode>
+      <SupportJustMyCode>false</SupportJustMyCode>
     </ClCompile>
     <Link>
       <ProfileGuidedDatabase />
@@ -214,6 +215,7 @@
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <ConformanceMode>true</ConformanceMode>
+      <SupportJustMyCode>false</SupportJustMyCode>
     </ClCompile>
     <Link>
       <ProfileGuidedDatabase />
