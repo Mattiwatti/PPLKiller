@@ -1,4 +1,3 @@
-#include <ntddk.h>
 #include "procinfo.h"
 #include <stdio.h>
 #include <stdarg.h>
@@ -513,7 +512,7 @@ UnprotectProcesses(
 				}
 			}
 
-			if (Pid != 0 && Pid != 4 &&											// Not a system process?
+			if (Pid != 0 && !PsIsSystemProcess(Process) &&						// Not a system process?
 				SignatureLevelOffset != 0 && SectionSignatureLevelOffset != 0)	// >= Windows 10 RS2, and offsets known?
 			{
 				const PUCHAR SignatureLevelByte = reinterpret_cast<PUCHAR>(Process) + SignatureLevelOffset;

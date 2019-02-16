@@ -1,6 +1,6 @@
 #pragma once
 
-#include <wdm.h>
+#include <ntddk.h>
 
 // Help the helpers
 #if defined(__INTELLISENSE__) && defined(NT_ASSERT_ACTION)
@@ -397,6 +397,12 @@ PsIsProtectedProcessLight(
 	_In_ PEPROCESS Process
 	);
 #endif
+
+NTKERNELAPI
+BOOLEAN
+PsIsSystemProcess(
+	_In_ PEPROCESS Process
+	);
 
 NTKERNELAPI
 NTSTATUS
