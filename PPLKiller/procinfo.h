@@ -1,5 +1,10 @@
 #pragma once
 
+#if defined(__INTELLISENSE__) || defined(__RESHARPER__) || defined(__clang__)
+	// None of these seem to know that compiling for kernel mode implies -D_KERNEL_MODE=1 (a reserved define that you can't pass to cl.exe)
+	#define _KERNEL_MODE 1
+#endif
+
 #include <ntddk.h>
 
 // Help the helpers
@@ -30,10 +35,6 @@
 	// Finally, stop this idiotic warning from causing the build to fail.
 	// (issued for "MyStruct S = { 0 }", which is perfectly standards compliant and well-defined in both C and C++)
 	#pragma clang diagnostic ignored "-Wmissing-field-initializers"
-#endif
-#if defined(__INTELLISENSE__) || defined(__RESHARPER__) || defined(__clang__)
-	// None of these seem to know that compiling for kernel mode implies -D_KERNEL_MODE=1 (a reserved define that you can't pass to cl.exe)
-	#define _KERNEL_MODE 1
 #endif
 #if defined(__RESHARPER__)
 	// Work around the lame fact that Resharper doesn't understand __declspec(dllimport)
