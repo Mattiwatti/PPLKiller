@@ -13,7 +13,7 @@ PPLKiller works on Windows 8.1 and 10, and does not require disabling Kernel Pat
 It has been brought to my attention that Windows 10 RS2 ('Redstone 2', 'Creator's Update', Windows 1703, Windows 10.0.15063.0, and other possible names I'm not aware of) has added a new kernel mode verification of the 'binary signature policy' process mitigation type in the `EPROCESS` structure. This mitigation policy, while not new in itself (it has existed since Windows 8), was previously enforced only in user mode. The new update however makes it impossible to inject any code that is not signed by Microsoft into the same processes that were already 'light'-protected previously. Because this has equally disastrous effects for debugging as process protection, and is done for unjustifiable reasons (unlike other mitigation policies such as DEP, ASLR and CFG, which have a technical basis for their implementation rather than a political one), I have added functionality that will automatically disable this policy on Windows RS2 and later. Older Windows versions are currently passed over for this, unless Microsoft decides to retroactively add the check to older kernels.
 
 # Compiling
-1. Install the [WDK](https://go.microsoft.com/fwlink/?linkid=2026156).
+1. Install the [WDK](https://go.microsoft.com/fwlink/?linkid=2085767).
 2. Open the solution file and compile.
 
 # Installation
