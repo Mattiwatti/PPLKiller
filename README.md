@@ -3,7 +3,7 @@ PPLKiller ('Protected Processes Light killer', not 'people killer') is a kernel 
 
 PPL is a mechanism introduced in Windows 8.1 that transfers many of the security restrictions enjoyed by the System process to user mode processes such as smss.exe and csrss.exe. For example, it is not possible to open a PPL process with `PROCESS_VM_READ` access, even when running as the Local System user and having debug privileges enabled.
 
-For more info on PPL, read [The Evolution of Protected Processes](http://www.alex-ionescu.com/?p=97) by Alex Ionescu.
+For more info on PPL, read [The Evolution of Protected Processes](https://www.crowdstrike.com/blog/evolution-protected-processes-part-1-pass-hash-mitigations-windows-81/) by Alex Ionescu.
 
 While PPL was probably designed with good intentions (and there are uses for it, such as protecting the LSA process from tampering), I mostly find it to be a nuisance that gets in the way of debugging. That's why I wrote this driver that only does one thing: it finds all PPL processes and removes their protection. Non-'light' protected processes (i.e. the System process) remain protected.
 
