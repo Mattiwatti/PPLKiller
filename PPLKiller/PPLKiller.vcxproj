@@ -40,6 +40,7 @@
     <SupportsPackaging>false</SupportsPackaging>
     <DriverTargetPlatform>Desktop</DriverTargetPlatform>
     <SpectreMitigation>false</SpectreMitigation>
+    <Driver_SpectreMitigation>false</Driver_SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <TargetVersion>WindowsV6.3</TargetVersion>
@@ -50,6 +51,7 @@
     <SupportsPackaging>false</SupportsPackaging>
     <DriverTargetPlatform>Desktop</DriverTargetPlatform>
     <SpectreMitigation>false</SpectreMitigation>
+    <Driver_SpectreMitigation>false</Driver_SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <TargetVersion>WindowsV6.3</TargetVersion>
@@ -61,6 +63,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <DriverTargetPlatform>Desktop</DriverTargetPlatform>
     <SpectreMitigation>false</SpectreMitigation>
+    <Driver_SpectreMitigation>false</Driver_SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <TargetVersion>WindowsV6.3</TargetVersion>
@@ -72,6 +75,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <DriverTargetPlatform>Desktop</DriverTargetPlatform>
     <SpectreMitigation>false</SpectreMitigation>
+    <Driver_SpectreMitigation>false</Driver_SpectreMitigation>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -145,7 +149,7 @@
     </Link>
     <DriverSign>
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
-      <AdditionalOptions>/tr "http://sha256timestamp.ws.symantec.com/sha256/timestamp" /td sha256 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/tr "http://timestamp.digicert.com" /td sha256 %(AdditionalOptions)</AdditionalOptions>
     </DriverSign>
     <ResourceCompile>
       <PreprocessorDefinitions>_X86_=1;i386=1;STD_CALL;DBG=1;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -174,7 +178,7 @@
     </Link>
     <DriverSign>
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
-      <AdditionalOptions>/tr "http://sha256timestamp.ws.symantec.com/sha256/timestamp" /td sha256 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/tr "http://timestamp.digicert.com" /td sha256 %(AdditionalOptions)</AdditionalOptions>
     </DriverSign>
     <ResourceCompile>
       <PreprocessorDefinitions>_WIN64;_AMD64_=1;AMD64;DBG=1;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -207,7 +211,7 @@
     </Link>
     <DriverSign>
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
-      <AdditionalOptions>/tr "http://sha256timestamp.ws.symantec.com/sha256/timestamp" /td sha256 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/tr "http://timestamp.digicert.com" /td sha256 %(AdditionalOptions)</AdditionalOptions>
     </DriverSign>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -237,7 +241,7 @@
     </Link>
     <DriverSign>
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
-      <AdditionalOptions>/tr "http://sha256timestamp.ws.symantec.com/sha256/timestamp" /td sha256 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/tr "http://timestamp.digicert.com" /td sha256 %(AdditionalOptions)</AdditionalOptions>
     </DriverSign>
   </ItemDefinitionGroup>
   <ItemGroup>
