@@ -118,12 +118,11 @@ FindPsProtectionOffset(
 
 	// Since the EPROCESS struct is opaque and we don't know its size, allocate for 4K possible offsets
 	const PULONG CandidateOffsets = static_cast<PULONG>(
-		ExAllocatePoolWithTag(NonPagedPoolNx,
+		ExAllocatePoolZero(NonPagedPoolNx,
 							PAGE_SIZE * sizeof(ULONG),
 							'LPPK'));
 	if (CandidateOffsets == nullptr)
 		return STATUS_NO_MEMORY;
-	RtlZeroMemory(CandidateOffsets, sizeof(ULONG) * PAGE_SIZE);
 	
 	// Query all running processes
 	ULONG NumProtectedProcesses = 0, BestMatchCount = 0, Offset = 0;
@@ -136,9 +135,9 @@ FindPsProtectionOffset(
 											&Size)) != STATUS_INFO_LENGTH_MISMATCH)
 		goto finished;
 	SystemProcessInfo = static_cast<PSYSTEM_PROCESS_INFORMATION>(
-		ExAllocatePoolWithTag(NonPagedPoolNx,
-								static_cast<SIZE_T>(2) * Size,
-								'LPPK'));
+		ExAllocatePoolZero(NonPagedPoolNx,
+							static_cast<SIZE_T>(2) * Size,
+							'LPPK'));
 	if (SystemProcessInfo == nullptr)
 	{
 		Status = STATUS_NO_MEMORY;
@@ -273,13 +272,13 @@ FindSignatureLevelOffsets(
 
 	// Since the EPROCESS struct is opaque and we don't know its size, allocate for 4K possible offsets
 	const PULONG CandidateSignatureLevelOffsets = static_cast<PULONG>(
-		ExAllocatePoolWithTag(NonPagedPoolNx,
+		ExAllocatePoolZero(NonPagedPoolNx,
 							PAGE_SIZE * sizeof(ULONG),
 							'LPPK'));
 	if (CandidateSignatureLevelOffsets == nullptr)
 		return STATUS_NO_MEMORY;
 	const PULONG CandidateSectionSignatureLevelOffsets = static_cast<PULONG>(
-		ExAllocatePoolWithTag(NonPagedPoolNx,
+		ExAllocatePoolZero(NonPagedPoolNx,
 							PAGE_SIZE * sizeof(ULONG),
 							'LPPK'));
 	if (CandidateSectionSignatureLevelOffsets == nullptr)
@@ -287,8 +286,6 @@ FindSignatureLevelOffsets(
 		ExFreePoolWithTag(CandidateSignatureLevelOffsets, 'LPPK');
 		return STATUS_NO_MEMORY;
 	}
-	RtlZeroMemory(CandidateSignatureLevelOffsets, sizeof(ULONG) * PAGE_SIZE);
-	RtlZeroMemory(CandidateSectionSignatureLevelOffsets, sizeof(ULONG) * PAGE_SIZE);
 	
 	// Query all running processes
 	ULONG NumSignatureRequiredProcesses = 0, BestMatchCount = 0;
@@ -302,7 +299,7 @@ FindSignatureLevelOffsets(
 											&Size)) != STATUS_INFO_LENGTH_MISMATCH)
 		goto finished;
 	SystemProcessInfo = static_cast<PSYSTEM_PROCESS_INFORMATION>(
-		ExAllocatePoolWithTag(NonPagedPoolNx,
+		ExAllocatePoolZero(NonPagedPoolNx,
 								static_cast<SIZE_T>(2) * Size,
 								'LPPK'));
 	if (SystemProcessInfo == nullptr)
@@ -466,7 +463,7 @@ UnprotectProcesses(
 											&Size)) != STATUS_INFO_LENGTH_MISMATCH)
 		return Status;
 	SystemProcessInfo = static_cast<PSYSTEM_PROCESS_INFORMATION>(
-		ExAllocatePoolWithTag(NonPagedPoolNx,
+		ExAllocatePoolZero(NonPagedPoolNx,
 							static_cast<SIZE_T>(2) * Size,
 							'LPPK'));
 	if (SystemProcessInfo == nullptr)
@@ -586,6 +583,9 @@ DriverEntry(
 		Log("Unsupported OS version. Be glad!\n");
 		return STATUS_NOT_SUPPORTED;
 	}
+
+	// Initialize pool zeroing support on kernels that do not support this natively
+	ExInitializeDriverRuntime(DrvRtPoolNxOptIn);
 
 	// Find the offset of the PS_PROTECTION field for the running kernel
 	ULONG PsProtectionOffset;

@@ -135,7 +135,7 @@
       <WppScanConfigurationData Condition="'%(ClCompile. ScanConfigurationData)'  == ''">trace.h</WppScanConfigurationData>
       <WppKernelMode>true</WppKernelMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;NT_INLINE_IRQL;NT_INLINE_GET_CURRENT_IRQL;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_X86_=1;i386=1;STD_CALL;DBG;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;NT_INLINE_IRQL;NT_INLINE_GET_CURRENT_IRQL;POOL_ZERO_DOWN_LEVEL_SUPPORT;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_X86_=1;i386=1;STD_CALL;DBG;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/Gw /Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
@@ -165,7 +165,7 @@
       <WppScanConfigurationData Condition="'%(ClCompile. ScanConfigurationData)'  == ''">trace.h</WppScanConfigurationData>
       <WppKernelMode>true</WppKernelMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;NT_INLINE_IRQL;NT_INLINE_GET_CURRENT_IRQL;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_WIN64;_AMD64_;AMD64;DBG;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;NT_INLINE_IRQL;NT_INLINE_GET_CURRENT_IRQL;POOL_ZERO_DOWN_LEVEL_SUPPORT;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_WIN64;_AMD64_;AMD64;DBG;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/Gw /Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
@@ -195,7 +195,7 @@
       <WppScanConfigurationData Condition="'%(ClCompile. ScanConfigurationData)'  == ''">trace.h</WppScanConfigurationData>
       <WppKernelMode>true</WppKernelMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;NT_INLINE_IRQL;NT_INLINE_GET_CURRENT_IRQL;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_X86_=1;i386=1;STD_CALL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;NT_INLINE_IRQL;NT_INLINE_GET_CURRENT_IRQL;POOL_ZERO_DOWN_LEVEL_SUPPORT;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_X86_=1;i386=1;STD_CALL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/Gw /Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -226,7 +226,7 @@
       <WppScanConfigurationData Condition="'%(ClCompile. ScanConfigurationData)'  == ''">trace.h</WppScanConfigurationData>
       <WppKernelMode>true</WppKernelMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;NT_INLINE_IRQL;NT_INLINE_GET_CURRENT_IRQL;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_WIN64;_AMD64_;AMD64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;NT_INLINE_IRQL;NT_INLINE_GET_CURRENT_IRQL;POOL_ZERO_DOWN_LEVEL_SUPPORT;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_WIN64;_AMD64_;AMD64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/Gw /Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
