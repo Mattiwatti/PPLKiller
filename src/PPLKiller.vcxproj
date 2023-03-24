@@ -32,7 +32,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <TargetVersion>WindowsV6.3</TargetVersion>
+    <TargetVersion>Windows10</TargetVersion>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
     <ConfigurationType>Driver</ConfigurationType>
@@ -41,9 +41,10 @@
     <DriverTargetPlatform>Desktop</DriverTargetPlatform>
     <SpectreMitigation>false</SpectreMitigation>
     <Driver_SpectreMitigation>false</Driver_SpectreMitigation>
+    <_NT_TARGET_VERSION>0x0603</_NT_TARGET_VERSION>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <TargetVersion>WindowsV6.3</TargetVersion>
+    <TargetVersion>Windows10</TargetVersion>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
     <ConfigurationType>Driver</ConfigurationType>
@@ -52,9 +53,10 @@
     <DriverTargetPlatform>Desktop</DriverTargetPlatform>
     <SpectreMitigation>false</SpectreMitigation>
     <Driver_SpectreMitigation>false</Driver_SpectreMitigation>
+    <_NT_TARGET_VERSION>0x0603</_NT_TARGET_VERSION>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <TargetVersion>WindowsV6.3</TargetVersion>
+    <TargetVersion>Windows10</TargetVersion>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
     <ConfigurationType>Driver</ConfigurationType>
@@ -64,9 +66,10 @@
     <DriverTargetPlatform>Desktop</DriverTargetPlatform>
     <SpectreMitigation>false</SpectreMitigation>
     <Driver_SpectreMitigation>false</Driver_SpectreMitigation>
+    <_NT_TARGET_VERSION>0x0603</_NT_TARGET_VERSION>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <TargetVersion>WindowsV6.3</TargetVersion>
+    <TargetVersion>Windows10</TargetVersion>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
     <ConfigurationType>Driver</ConfigurationType>
@@ -76,6 +79,7 @@
     <DriverTargetPlatform>Desktop</DriverTargetPlatform>
     <SpectreMitigation>false</SpectreMitigation>
     <Driver_SpectreMitigation>false</Driver_SpectreMitigation>
+    <_NT_TARGET_VERSION>0x0603</_NT_TARGET_VERSION>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -131,16 +135,17 @@
       <WppScanConfigurationData Condition="'%(ClCompile. ScanConfigurationData)'  == ''">trace.h</WppScanConfigurationData>
       <WppKernelMode>true</WppKernelMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_X86_=1;i386=1;STD_CALL;DBG;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;NT_INLINE_IRQL;NT_INLINE_GET_CURRENT_IRQL;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_X86_=1;i386=1;STD_CALL;DBG;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/Gw /Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <ConformanceMode>true</ConformanceMode>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <ProfileGuidedDatabase />
-      <Version>6.03</Version>
+      <Version>6.3</Version>
       <AdditionalOptions>/NOVCFEATURE /NOCOFFGRPINFO %(AdditionalOptions)</AdditionalOptions>
       <Profile>false</Profile>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
@@ -149,7 +154,7 @@
     </Link>
     <DriverSign>
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
-      <AdditionalOptions>/tr "http://timestamp.digicert.com" /td sha256 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/tr "http://sha256timestamp.ws.symantec.com/sha256/timestamp" /td sha256 %(AdditionalOptions)</AdditionalOptions>
     </DriverSign>
     <ResourceCompile>
       <PreprocessorDefinitions>_X86_=1;i386=1;STD_CALL;DBG=1;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -160,16 +165,17 @@
       <WppScanConfigurationData Condition="'%(ClCompile. ScanConfigurationData)'  == ''">trace.h</WppScanConfigurationData>
       <WppKernelMode>true</WppKernelMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_WIN64;_AMD64_;AMD64;DBG;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;NT_INLINE_IRQL;NT_INLINE_GET_CURRENT_IRQL;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_WIN64;_AMD64_;AMD64;DBG;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/Gw /Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <ConformanceMode>true</ConformanceMode>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <ProfileGuidedDatabase />
-      <Version>6.03</Version>
+      <Version>6.3</Version>
       <AdditionalOptions>/NOVCFEATURE /NOCOFFGRPINFO %(AdditionalOptions)</AdditionalOptions>
       <Profile>false</Profile>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
@@ -178,7 +184,7 @@
     </Link>
     <DriverSign>
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
-      <AdditionalOptions>/tr "http://timestamp.digicert.com" /td sha256 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/tr "http://sha256timestamp.ws.symantec.com/sha256/timestamp" /td sha256 %(AdditionalOptions)</AdditionalOptions>
     </DriverSign>
     <ResourceCompile>
       <PreprocessorDefinitions>_WIN64;_AMD64_=1;AMD64;DBG=1;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -189,7 +195,7 @@
       <WppScanConfigurationData Condition="'%(ClCompile. ScanConfigurationData)'  == ''">trace.h</WppScanConfigurationData>
       <WppKernelMode>true</WppKernelMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_X86_=1;i386=1;STD_CALL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;NT_INLINE_IRQL;NT_INLINE_GET_CURRENT_IRQL;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_X86_=1;i386=1;STD_CALL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/Gw /Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -197,11 +203,12 @@
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <ConformanceMode>true</ConformanceMode>
       <SupportJustMyCode>false</SupportJustMyCode>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <ProfileGuidedDatabase />
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <Version>6.03</Version>
+      <Version>6.3</Version>
       <EntryPointSymbol>DriverEntry@8</EntryPointSymbol>
       <AdditionalOptions>/NOVCFEATURE /NOCOFFGRPINFO %(AdditionalOptions)</AdditionalOptions>
       <Profile>false</Profile>
@@ -211,7 +218,7 @@
     </Link>
     <DriverSign>
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
-      <AdditionalOptions>/tr "http://timestamp.digicert.com" /td sha256 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/tr "http://sha256timestamp.ws.symantec.com/sha256/timestamp" /td sha256 %(AdditionalOptions)</AdditionalOptions>
     </DriverSign>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -219,7 +226,7 @@
       <WppScanConfigurationData Condition="'%(ClCompile. ScanConfigurationData)'  == ''">trace.h</WppScanConfigurationData>
       <WppKernelMode>true</WppKernelMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_WIN64;_AMD64_;AMD64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>POOL_NX_OPTIN_AUTO=1;NT_INLINE_IRQL;NT_INLINE_GET_CURRENT_IRQL;WINVER=0x0603;_WIN32_WINNT=0x0603;NTDDI_VERSION=0x06030000;_WIN64;_AMD64_;AMD64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/Gw /Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -227,11 +234,12 @@
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <ConformanceMode>true</ConformanceMode>
       <SupportJustMyCode>false</SupportJustMyCode>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <ProfileGuidedDatabase />
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <Version>6.03</Version>
+      <Version>6.3</Version>
       <EntryPointSymbol>DriverEntry</EntryPointSymbol>
       <AdditionalOptions>/NOVCFEATURE /NOCOFFGRPINFO %(AdditionalOptions)</AdditionalOptions>
       <Profile>false</Profile>
@@ -241,7 +249,7 @@
     </Link>
     <DriverSign>
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
-      <AdditionalOptions>/tr "http://timestamp.digicert.com" /td sha256 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/tr "http://sha256timestamp.ws.symantec.com/sha256/timestamp" /td sha256 %(AdditionalOptions)</AdditionalOptions>
     </DriverSign>
   </ItemDefinitionGroup>
   <ItemGroup>
