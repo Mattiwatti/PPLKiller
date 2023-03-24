@@ -56,16 +56,16 @@ extern "C"
 #pragma alloc_text(INIT, DriverEntry)
 #endif
 
-constexpr const CHAR* const SeSigningLevelNames[] =
+constexpr PCCH SeSigningLevelNames[] =
 {
 	"SE_SIGNING_LEVEL_UNCHECKED",		// 0x0
 	"SE_SIGNING_LEVEL_UNSIGNED",
 	"SE_SIGNING_LEVEL_ENTERPRISE",
-	"SE_SIGNING_LEVEL_CUSTOM_1",
+	"SE_SIGNING_LEVEL_DEVELOPER",		// SE_SIGNING_LEVEL_CUSTOM_1
 	"SE_SIGNING_LEVEL_AUTHENTICODE",
 	"SE_SIGNING_LEVEL_CUSTOM_2",
 	"SE_SIGNING_LEVEL_STORE",
-	"SE_SIGNING_LEVEL_ANTIMALWARE",
+	"SE_SIGNING_LEVEL_ANTIMALWARE",		// SE_SIGNING_LEVEL_CUSTOM_3
 	"SE_SIGNING_LEVEL_MICROSOFT",
 	"SE_SIGNING_LEVEL_CUSTOM_4",
 	"SE_SIGNING_LEVEL_CUSTOM_5",
@@ -76,7 +76,7 @@ constexpr const CHAR* const SeSigningLevelNames[] =
 	"SE_SIGNING_LEVEL_CUSTOM_6",		// 0xf
 };
 
-constexpr const CHAR* const SeSigningTypeNames[] =
+constexpr PCCH SeSigningTypeNames[] =
 {
 	"SeImageSignatureNone",				// 0x0
 	"SeImageSignatureEmbedded",
@@ -84,10 +84,8 @@ constexpr const CHAR* const SeSigningTypeNames[] =
 	"SeImageSignatureCatalogCached",
 	"SeImageSignatureCatalogNotCached",
 	"SeImageSignatureCatalogHint",
-	"SeImageSignaturePackageCatalog",	// 0x6
-
-	// Make sure it isn't possible to overrun the array bounds using 3 index bits
-	"<INVALID>"							// 0x7
+	"SeImageSignaturePackageCatalog",
+	"SeImageSignaturePplMitigated"		// 0x7
 };
 
 VOID
