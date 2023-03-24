@@ -137,7 +137,7 @@ FindPsProtectionOffset(
 		goto finished;
 	SystemProcessInfo = static_cast<PSYSTEM_PROCESS_INFORMATION>(
 		ExAllocatePoolWithTag(NonPagedPoolNx,
-								2 * Size,
+								static_cast<SIZE_T>(2) * Size,
 								'LPPK'));
 	if (SystemProcessInfo == nullptr)
 	{
@@ -303,7 +303,7 @@ FindSignatureLevelOffsets(
 		goto finished;
 	SystemProcessInfo = static_cast<PSYSTEM_PROCESS_INFORMATION>(
 		ExAllocatePoolWithTag(NonPagedPoolNx,
-								2 * Size,
+								static_cast<SIZE_T>(2) * Size,
 								'LPPK'));
 	if (SystemProcessInfo == nullptr)
 	{
@@ -467,7 +467,7 @@ UnprotectProcesses(
 		return Status;
 	SystemProcessInfo = static_cast<PSYSTEM_PROCESS_INFORMATION>(
 		ExAllocatePoolWithTag(NonPagedPoolNx,
-							2 * Size,
+							static_cast<SIZE_T>(2) * Size,
 							'LPPK'));
 	if (SystemProcessInfo == nullptr)
 	{
